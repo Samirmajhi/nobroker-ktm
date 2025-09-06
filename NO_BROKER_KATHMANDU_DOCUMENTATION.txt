@@ -1,0 +1,869 @@
+================================================================================
+                    NO-BROKER KATHMANDU - COMPLETE DOCUMENTATION
+================================================================================
+
+📋 TABLE OF CONTENTS
+====================
+1. System Overview
+2. User Roles & Permissions
+3. User Stories & Workflows
+4. API Documentation
+5. Database Schema
+6. Frontend Architecture
+7. Backend Architecture
+8. Image System
+9. Authentication & Security
+10. Deployment & Setup
+11. Testing & Quality Assurance
+
+================================================================================
+1. SYSTEM OVERVIEW
+================================================================================
+
+🎯 PLATFORM PURPOSE
+-------------------
+No-Broker Kathmandu is a comprehensive property rental platform that connects 
+property owners with potential tenants in Kathmandu, Nepal. The platform 
+eliminates the need for traditional brokers by providing direct communication 
+and transaction capabilities.
+
+🏗️ TECHNICAL STACK
+-------------------
+Frontend: React 18 + TypeScript + Redux Toolkit + Tailwind CSS
+Backend: Node.js + Express + PostgreSQL + JWT Authentication
+File Storage: Local file system with multer
+Real-time: WebSocket support (planned)
+Deployment: Local development with production-ready configuration
+
+🌐 ACCESS URLs
+--------------
+Frontend: http://localhost:3000
+Backend API: http://localhost:5000/api
+Health Check: http://localhost:5000/api/health
+Image Serving: http://localhost:5000/uploads/listings/
+
+================================================================================
+2. USER ROLES & PERMISSIONS
+================================================================================
+
+👥 USER ROLES
+-------------
+
+1. TENANT
+   - Browse and search properties
+   - Schedule property visits
+   - Message property owners
+   - Save favorite properties
+   - View visit history
+   - Rate properties and owners
+   - Complete rental agreements
+
+2. OWNER
+   - Create and manage property listings
+   - Upload property photos
+   - Respond to tenant inquiries
+   - Manage visit schedules
+   - View analytics and performance
+   - Complete KYC verification (required)
+   - Handle rental agreements
+
+3. STAFF
+   - Manage property visits
+   - Handle user support
+   - Verify property listings
+   - Access staff dashboard
+   - Moderate conversations
+   - Generate reports
+
+4. ADMIN
+   - Full platform access
+   - User management
+   - System analytics
+   - Content moderation
+   - Platform configuration
+   - KYC verification management
+
+🔐 PERMISSIONS MATRIX
+---------------------
+┌─────────────┬─────────┬─────────┬─────────┬─────────┐
+│ Feature     │ Tenant  │ Owner   │ Staff   │ Admin   │
+├─────────────┼─────────┼─────────┼─────────┼─────────┤
+│ Browse      │   ✅    │   ✅    │   ✅    │   ✅    │
+│ Create List │   ❌    │   ✅    │   ❌    │   ✅    │
+│ Upload Pics │   ❌    │   ✅    │   ❌    │   ✅    │
+│ Schedule    │   ✅    │   ❌    │   ✅    │   ✅    │
+│ Message     │   ✅    │   ✅    │   ✅    │   ✅    │
+│ Manage KYC  │   ❌    │   ❌    │   ❌    │   ✅    │
+│ View All    │   ❌    │   ❌    │   ✅    │   ✅    │
+└─────────────┴─────────┴─────────┴─────────┴─────────┘
+
+================================================================================
+3. USER STORIES & WORKFLOWS
+================================================================================
+
+🏠 PROPERTY LISTING WORKFLOW
+----------------------------
+
+USER STORY: As a property owner, I want to list my property so that tenants can find and contact me.
+
+ACCEPTANCE CRITERIA:
+- Owner must be KYC verified
+- Can upload multiple property photos
+- Can set primary photo
+- Can specify property details (price, location, amenities)
+- Listing becomes visible to tenants immediately
+
+WORKFLOW:
+1. Owner logs in → Dashboard → "Create Listing"
+2. Fill property details form
+3. Upload photos (max 10, 5MB each)
+4. Submit listing
+5. System creates listing and stores photos
+6. Listing appears in tenant search results
+
+🔍 PROPERTY SEARCH WORKFLOW
+---------------------------
+
+USER STORY: As a tenant, I want to search for properties that match my criteria.
+
+ACCEPTANCE CRITERIA:
+- Can filter by location, price, bedrooms, property type
+- Can sort by price, date, size
+- Can save favorite properties
+- Can view property details and photos
+
+WORKFLOW:
+1. Tenant visits listings page
+2. Apply filters (location, price range, etc.)
+3. Browse filtered results
+4. Click on property to view details
+5. Save to favorites or schedule visit
+
+📅 VISIT SCHEDULING WORKFLOW
+----------------------------
+
+USER STORY: As a tenant, I want to schedule property visits to see properties in person.
+
+ACCEPTANCE CRITERIA:
+- Can select date and time
+- Can add visit notes
+- Owner receives notification
+- Can cancel/reschedule visits
+
+WORKFLOW:
+1. Tenant finds property → "Schedule Visit"
+2. Select date and time
+3. Add optional notes
+4. Submit visit request
+5. Owner receives notification
+6. Owner can accept/decline
+7. Visit appears in both dashboards
+
+💬 MESSAGING WORKFLOW
+---------------------
+
+USER STORY: As a tenant, I want to message property owners to ask questions about properties.
+
+ACCEPTANCE CRITERIA:
+- Can start conversation from property listing
+- Can send text messages
+- Can view conversation history
+- Real-time message updates
+
+WORKFLOW:
+1. Tenant clicks "Message Owner" on property
+2. System creates conversation
+3. Tenant sends message
+4. Owner receives notification
+5. Owner responds
+6. Conversation continues
+
+⭐ RATING & REVIEW WORKFLOW
+---------------------------
+
+USER STORY: As a tenant, I want to rate properties and owners after visiting.
+
+ACCEPTANCE CRITERIA:
+- Can rate property (1-5 stars)
+- Can write review text
+- Can rate owner separately
+- Reviews are verified
+
+WORKFLOW:
+1. Tenant visits property
+2. After visit, system prompts for rating
+3. Tenant rates property and owner
+4. Writes optional review
+5. Rating appears on property listing
+6. Owner can respond to reviews
+
+🔐 KYC VERIFICATION WORKFLOW
+----------------------------
+
+USER STORY: As an owner, I want to verify my identity to build trust with tenants.
+
+ACCEPTANCE CRITERIA:
+- Must complete KYC to create listings
+- Upload identity documents
+- Admin reviews and approves
+- Status visible to tenants
+
+WORKFLOW:
+1. Owner registers account
+2. Attempts to create listing
+3. System prompts for KYC
+4. Upload identity documents
+5. Admin reviews documents
+6. Admin approves/rejects
+7. Owner can now create listings
+
+================================================================================
+4. API DOCUMENTATION
+================================================================================
+
+🔗 BASE URL: http://localhost:5000/api
+
+📋 AUTHENTICATION
+-----------------
+All protected endpoints require Bearer token in Authorization header:
+Authorization: Bearer <jwt_token>
+
+🔄 AUTH ENDPOINTS
+-----------------
+
+POST /auth/register
+Description: Register new user
+Body: {
+  "fullName": "string",
+  "email": "string", 
+  "phone": "string",
+  "password": "string",
+  "role": "tenant|owner|staff"
+}
+Response: { "user": {...}, "token": "string" }
+
+POST /auth/login
+Description: User login
+Body: {
+  "email": "string",
+  "password": "string"
+}
+Response: { "user": {...}, "token": "string" }
+
+GET /auth/profile
+Description: Get user profile (protected)
+Response: { "user": {...} }
+
+PUT /auth/profile
+Description: Update user profile (protected)
+Body: {
+  "fullName": "string",
+  "phone": "string",
+  "profilePictureUrl": "string"
+}
+
+🏠 LISTINGS ENDPOINTS
+---------------------
+
+GET /listings
+Description: Get all listings with filters
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 10)
+- minPrice: number
+- maxPrice: number
+- location: string
+- propertyType: string
+- bedrooms: number
+- sortBy: string
+- sortOrder: string
+
+GET /listings/:listingId
+Description: Get single listing by ID
+Response: { "listing": {...} }
+
+POST /listings
+Description: Create new listing (owner only, KYC required)
+Body: {
+  "title": "string",
+  "description": "string",
+  "price": number,
+  "deposit": number,
+  "size": number,
+  "bedrooms": number,
+  "bathrooms": number,
+  "location": "string",
+  "propertyType": "string",
+  "amenities": ["string"],
+  "furnishingStatus": "string",
+  "parkingAvailable": boolean,
+  "petFriendly": boolean
+}
+
+PUT /listings/:listingId
+Description: Update listing (owner only)
+Body: { ...listing fields }
+
+DELETE /listings/:listingId
+Description: Delete listing (owner only)
+
+GET /listings/my-listings
+Description: Get user's own listings (owner only)
+
+📸 PHOTO ENDPOINTS
+------------------
+
+POST /listings/:listingId/photos
+Description: Upload listing photos (owner only)
+Content-Type: multipart/form-data
+Body: {
+  "photos": [File],
+  "isPrimary": "true|false"
+}
+
+DELETE /listings/:listingId/photos/:photoId
+Description: Delete listing photo (owner only)
+
+PUT /listings/:listingId/photos/:photoId/primary
+Description: Set photo as primary (owner only)
+
+📅 VISITS ENDPOINTS
+-------------------
+
+GET /visits
+Description: Get user's visits (tenant) or property visits (owner)
+
+POST /visits
+Description: Schedule visit (tenant only)
+Body: {
+  "listing_id": "string",
+  "visit_datetime": "ISO string",
+  "visit_notes": "string"
+}
+
+PUT /visits/:visitId/status
+Description: Update visit status (owner/staff only)
+Body: { "status": "scheduled|completed|cancelled" }
+
+DELETE /visits/:visitId
+Description: Cancel visit (tenant only)
+
+💬 MESSAGING ENDPOINTS
+----------------------
+
+GET /messages/conversations
+Description: Get user's conversations
+
+POST /messages/conversations
+Description: Start new conversation
+Body: {
+  "listingId": "string",
+  "otherUserId": "string"
+}
+
+GET /messages/conversations/:conversationId
+Description: Get conversation messages
+
+POST /messages/conversations/:conversationId
+Description: Send message
+Body: { "message": "string" }
+
+❤️ FAVORITES ENDPOINTS
+----------------------
+
+GET /favorites
+Description: Get user's favorite listings
+
+POST /favorites
+Description: Add listing to favorites
+Body: { "listing_id": "string" }
+
+DELETE /favorites/:listingId
+Description: Remove from favorites
+
+⭐ RATINGS ENDPOINTS
+-------------------
+
+GET /ratings/listing/:listingId
+Description: Get listing ratings
+
+POST /ratings
+Description: Add rating
+Body: {
+  "listing_id": "string",
+  "rating": number (1-5),
+  "review": "string",
+  "rating_type": "tenant_to_property|tenant_to_owner"
+}
+
+👥 USER MANAGEMENT ENDPOINTS
+---------------------------
+
+GET /users
+Description: Get all users (admin only)
+
+PUT /users/:userId/kyc
+Description: Update KYC status (admin only)
+Body: { "kyc_status": "pending|verified|rejected" }
+
+GET /users/:userId
+Description: Get user details
+
+📊 ANALYTICS ENDPOINTS
+----------------------
+
+GET /admin/analytics
+Description: Get platform analytics (admin only)
+
+GET /owners/analytics
+Description: Get owner analytics (owner only)
+
+================================================================================
+5. DATABASE SCHEMA
+================================================================================
+
+🗄️ CORE TABLES
+--------------
+
+users
+- user_id (UUID, PK)
+- full_name (VARCHAR)
+- email (VARCHAR, UNIQUE)
+- phone (VARCHAR, UNIQUE)
+- password_hash (VARCHAR)
+- role (ENUM: tenant, owner, staff, admin)
+- kyc_status (ENUM: pending, verified, rejected)
+- profile_picture_url (VARCHAR)
+- is_active (BOOLEAN)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+listings
+- listing_id (UUID, PK)
+- owner_id (UUID, FK to users)
+- title (VARCHAR)
+- description (TEXT)
+- price (DECIMAL)
+- deposit (DECIMAL)
+- size (DECIMAL)
+- bedrooms (INTEGER)
+- bathrooms (INTEGER)
+- location (VARCHAR)
+- latitude (DECIMAL)
+- longitude (DECIMAL)
+- amenities (TEXT[])
+- property_type (VARCHAR)
+- furnishing_status (VARCHAR)
+- parking_available (BOOLEAN)
+- pet_friendly (BOOLEAN)
+- is_active (BOOLEAN)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+listing_photos
+- photo_id (UUID, PK)
+- listing_id (UUID, FK to listings)
+- photo_url (VARCHAR)
+- is_primary (BOOLEAN)
+- created_at (TIMESTAMP)
+
+visits
+- visit_id (UUID, PK)
+- listing_id (UUID, FK to listings)
+- tenant_id (UUID, FK to users)
+- rep_id (UUID, FK to users)
+- visit_datetime (TIMESTAMP)
+- status (ENUM: scheduled, completed, cancelled)
+- visit_notes (TEXT)
+- created_at (TIMESTAMP)
+
+favorites
+- favorite_id (UUID, PK)
+- user_id (UUID, FK to users)
+- listing_id (UUID, FK to listings)
+- created_at (TIMESTAMP)
+
+ratings
+- rating_id (UUID, PK)
+- listing_id (UUID, FK to listings)
+- tenant_id (UUID, FK to users)
+- owner_id (UUID, FK to users)
+- rating (INTEGER, 1-5)
+- review (TEXT)
+- rating_type (ENUM: tenant_to_property, tenant_to_owner)
+- created_at (TIMESTAMP)
+
+conversations
+- conversation_id (UUID, PK)
+- listing_id (UUID, FK to listings)
+- tenant_id (UUID, FK to users)
+- owner_id (UUID, FK to users)
+- created_at (TIMESTAMP)
+
+messages
+- message_id (UUID, PK)
+- conversation_id (UUID, FK to conversations)
+- sender_id (UUID, FK to users)
+- message (TEXT)
+- is_read (BOOLEAN)
+- created_at (TIMESTAMP)
+
+kyc_documents
+- document_id (UUID, PK)
+- user_id (UUID, FK to users)
+- document_type (VARCHAR)
+- document_url (VARCHAR)
+- verification_status (ENUM: pending, verified, rejected)
+- verified_by (UUID, FK to users)
+- verified_at (TIMESTAMP)
+- created_at (TIMESTAMP)
+
+================================================================================
+6. FRONTEND ARCHITECTURE
+================================================================================
+
+📁 PROJECT STRUCTURE
+--------------------
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   │   └── ProtectedRoute.tsx
+│   │   ├── layout/
+│   │   │   ├── Header.tsx
+│   │   │   └── Footer.tsx
+│   │   └── messaging/
+│   │       └── ChatInterface.tsx
+│   ├── pages/
+│   │   ├── HomePage.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── RegisterPage.tsx
+│   │   ├── ListingsPage.tsx
+│   │   ├── ListingDetailPage.tsx
+│   │   ├── CreateListingPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── TenantDashboardPage.tsx
+│   │   ├── OwnerDashboardPage.tsx
+│   │   ├── StaffDashboardPage.tsx
+│   │   ├── AdminDashboardPage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── MessagesPage.tsx
+│   │   └── VisitsPage.tsx
+│   ├── services/
+│   │   ├── authAPI.ts
+│   │   ├── authService.ts
+│   │   ├── listingsAPI.ts
+│   │   ├── visitsAPI.ts
+│   │   └── config.ts
+│   ├── store/
+│   │   ├── store.ts
+│   │   └── slices/
+│   │       ├── authSlice.ts
+│   │       ├── listingsSlice.ts
+│   │       ├── visitsSlice.ts
+│   │       ├── favoritesSlice.ts
+│   │       ├── messagesSlice.ts
+│   │       └── uiSlice.ts
+│   ├── App.tsx
+│   └── index.tsx
+
+🔧 KEY TECHNOLOGIES
+-------------------
+- React 18 with TypeScript
+- Redux Toolkit for state management
+- React Router for navigation
+- Axios for API calls
+- Tailwind CSS for styling
+- React Hook Form for forms
+- Lucide React for icons
+- React Hot Toast for notifications
+
+🎨 UI COMPONENTS
+----------------
+- Responsive design with mobile-first approach
+- Modern, clean interface
+- Role-based navigation
+- Image galleries with lazy loading
+- Form validation with error handling
+- Loading states and error boundaries
+- Toast notifications for user feedback
+
+================================================================================
+7. BACKEND ARCHITECTURE
+================================================================================
+
+📁 PROJECT STRUCTURE
+--------------------
+backend/
+├── config/
+│   └── database.js
+├── middleware/
+│   └── auth.js
+├── routes/
+│   ├── auth.js
+│   ├── listings.js
+│   ├── visits.js
+│   ├── messages.js
+│   ├── favorites.js
+│   ├── ratings.js
+│   ├── users.js
+│   ├── admin.js
+│   └── owners.js
+├── uploads/
+│   └── listings/
+├── server.js
+├── package.json
+└── .env
+
+🔧 KEY TECHNOLOGIES
+-------------------
+- Node.js with Express
+- PostgreSQL with pg library
+- JWT for authentication
+- Multer for file uploads
+- bcryptjs for password hashing
+- Helmet for security
+- CORS for cross-origin requests
+- Rate limiting for API protection
+
+🛡️ SECURITY FEATURES
+--------------------
+- JWT token authentication
+- Password hashing with bcrypt
+- CORS configuration
+- Helmet security headers
+- Rate limiting
+- Input validation
+- SQL injection prevention
+- File upload restrictions
+
+📊 DATABASE CONNECTION
+---------------------
+- Connection pooling
+- Automatic reconnection
+- Query parameterization
+- Transaction support
+- Error handling
+
+================================================================================
+8. IMAGE SYSTEM
+================================================================================
+
+📸 IMAGE UPLOAD FLOW
+--------------------
+1. User selects images in frontend
+2. Images validated (type, size)
+3. FormData created with images
+4. POST request to /listings/:id/photos
+5. Multer processes files
+6. Files saved to uploads/listings/
+7. Database records created
+8. Image URLs returned to frontend
+
+🔧 TECHNICAL DETAILS
+--------------------
+- File Storage: Local filesystem
+- Max File Size: 5MB per image
+- Max Files: 10 per listing
+- Allowed Types: JPEG, PNG, WebP
+- File Naming: listing-{timestamp}-{random}.{ext}
+- Primary Photo: One per listing
+- Image Serving: Static file serving via Express
+
+🖼️ IMAGE DISPLAY
+-----------------
+- Responsive images with object-fit
+- Lazy loading for performance
+- Fallback placeholders for missing images
+- Error handling for broken images
+- Thumbnail generation (planned)
+- Image optimization (planned)
+
+================================================================================
+9. AUTHENTICATION & SECURITY
+================================================================================
+
+🔐 JWT AUTHENTICATION
+---------------------
+- Token-based authentication
+- Access tokens with 7-day expiry
+- Automatic token refresh (planned)
+- Secure token storage in localStorage
+- Token validation on protected routes
+
+🛡️ SECURITY MEASURES
+---------------------
+- Password hashing with bcrypt (12 rounds)
+- CORS configuration for frontend
+- Helmet security headers
+- Rate limiting (100 requests per 15 minutes)
+- Input validation and sanitization
+- SQL injection prevention
+- XSS protection
+
+🔒 ROLE-BASED ACCESS
+--------------------
+- Middleware for role checking
+- Route protection by user role
+- KYC verification for owners
+- Admin-only endpoints
+- Owner-only listing management
+
+📝 PASSWORD POLICY
+------------------
+- Minimum 8 characters
+- Must include letters and numbers
+- Secure password reset flow
+- Account lockout after failed attempts
+
+================================================================================
+10. DEPLOYMENT & SETUP
+================================================================================
+
+🚀 QUICK START
+--------------
+
+1. Clone the repository
+2. Install PostgreSQL and create database
+3. Run setup script: setup_complete_platform.bat
+4. Start backend: cd backend && npm run dev
+5. Start frontend: cd frontend && npm start
+6. Access platform at http://localhost:3000
+
+📋 PREREQUISITES
+----------------
+- Node.js 16+ 
+- PostgreSQL 12+
+- npm or yarn
+- Git
+
+🔧 ENVIRONMENT SETUP
+--------------------
+Backend (.env):
+- PORT=5000
+- DB_HOST=localhost
+- DB_PORT=5432
+- DB_NAME=no_broker_kathmandu
+- DB_USER=postgres
+- DB_PASSWORD=your_password
+- JWT_SECRET=your_secret_key
+
+Frontend (.env):
+- REACT_APP_API_URL=http://localhost:5000/api
+- REACT_APP_IMAGE_URL=http://localhost:5000
+
+🗄️ DATABASE SETUP
+-----------------
+1. Create PostgreSQL database
+2. Run schema.sql to create tables
+3. Run additional SQL files for features
+4. Insert sample data (optional)
+
+📦 DEPENDENCIES
+---------------
+Backend:
+- express, cors, helmet
+- pg, bcryptjs, jsonwebtoken
+- multer, nodemailer
+- express-rate-limit
+
+Frontend:
+- react, react-dom, react-router-dom
+- @reduxjs/toolkit, react-redux
+- axios, react-hook-form
+- tailwindcss, lucide-react
+
+================================================================================
+11. TESTING & QUALITY ASSURANCE
+================================================================================
+
+🧪 TESTING STRATEGY
+-------------------
+- Unit tests for API endpoints
+- Integration tests for database operations
+- Frontend component testing
+- End-to-end user flow testing
+- Performance testing
+- Security testing
+
+📊 QUALITY METRICS
+------------------
+- Code coverage > 80%
+- API response time < 200ms
+- Image load time < 2s
+- Zero critical security vulnerabilities
+- Cross-browser compatibility
+- Mobile responsiveness
+
+🔍 TESTING TOOLS
+----------------
+- Jest for unit testing
+- Supertest for API testing
+- React Testing Library
+- Cypress for E2E testing
+- ESLint for code quality
+- Prettier for code formatting
+
+📈 PERFORMANCE OPTIMIZATION
+---------------------------
+- Image compression and optimization
+- Lazy loading for images
+- Database query optimization
+- Caching strategies
+- Bundle size optimization
+- CDN integration (planned)
+
+================================================================================
+🎯 FUTURE ENHANCEMENTS
+================================================================================
+
+🚀 PLANNED FEATURES
+-------------------
+1. Real-time messaging with WebSockets
+2. Push notifications
+3. Mobile app (React Native)
+4. Advanced search filters
+5. Virtual property tours
+6. Payment integration
+7. Document signing
+8. Analytics dashboard
+9. Multi-language support
+10. Social media integration
+
+🔧 TECHNICAL IMPROVEMENTS
+-------------------------
+1. Image CDN integration
+2. Redis caching
+3. Microservices architecture
+4. Docker containerization
+5. CI/CD pipeline
+6. Automated testing
+7. Performance monitoring
+8. Error tracking
+9. SEO optimization
+10. PWA capabilities
+
+================================================================================
+📞 SUPPORT & CONTACT
+================================================================================
+
+For technical support or questions:
+- Check the troubleshooting guide
+- Review API documentation
+- Test system with test_system.js
+- Contact development team
+
+Demo Accounts:
+- Tenant: tenant@test.com / password123
+- Owner: owner@test.com / password123  
+- Admin: admin@nobroker.com / password123
+
+================================================================================
+📄 END OF DOCUMENTATION
+================================================================================
+
+This documentation covers all aspects of the No-Broker Kathmandu platform.
+For updates and latest information, refer to the project repository.
+
+Last Updated: December 2024
+Version: 1.0.0
