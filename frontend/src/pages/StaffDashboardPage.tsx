@@ -18,7 +18,21 @@ import {
   MapPin,
   Phone,
   Mail,
-  DollarSign
+  DollarSign,
+  Settings,
+  Shield,
+  RefreshCw,
+  Activity,
+  Zap,
+  Star,
+  Heart,
+  Bell,
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Menu,
+  X
 } from 'lucide-react';
 import { getImageUrl } from '../services/config';
 import ReportsSidepane from '../components/reports/ReportsSidepane';
@@ -724,31 +738,52 @@ const StaffDashboardPage: React.FC = () => {
   // No ad click handling for staff
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Modern Header */}
+      <div className="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {user?.full_name}</p>
-            </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex items-center space-x-4">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                {user.role === 'admin' ? 'Admin' : 'Staff'}
-              </span>
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-3 mb-2">
+                  <h1 className="text-3xl md:text-4xl font-heading font-bold text-gray-900">
+                    Staff Dashboard
+                  </h1>
+                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                    user.role === 'admin' 
+                      ? 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border border-purple-300' 
+                      : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300'
+                  }`}>
+                    {user.role === 'admin' ? '👑 Admin' : '🛡️ Staff'}
+                  </span>
+                </div>
+                <p className="text-lg text-gray-600">
+                  Welcome back, <span className="font-semibold text-gray-900">{user?.full_name}</span>
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setShowAdsManagement(true)}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center"
               >
-                <Eye className="w-4 h-4" />
-                <span>Manage Ads</span>
+                <Eye className="w-5 h-5 mr-2" />
+                Manage Ads
               </button>
               <button
                 onClick={fetchStaffData}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow hover:shadow-lg flex items-center"
               >
+                <RefreshCw className="w-5 h-5 mr-2" />
                 Refresh Data
+              </button>
+              <button className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 p-3 rounded-xl transition-all duration-200 shadow hover:shadow-lg">
+                <Settings className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -756,50 +791,31 @@ const StaffDashboardPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="mb-6">
-          <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('today')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'today'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Today's Activity
-            </button>
-            <button
-              onClick={() => setActiveTab('visits')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'visits'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Visit Management
-            </button>
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'reports'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Reports & Analytics
-            </button>
-          </nav>
+        {/* Modern Tabs */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-2">
+            <nav className="flex space-x-2">
+              {[
+                { id: 'overview', label: 'Overview', icon: Activity },
+                { id: 'today', label: "Today's Activity", icon: Calendar },
+                { id: 'visits', label: 'Visit Management', icon: MapPin },
+                { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
 
         {/* Overview Tab */}
