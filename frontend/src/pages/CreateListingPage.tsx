@@ -15,7 +15,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import { RootState } from '../store/store';
+import { RootState, AppDispatch } from '../store/store';
 import { createListing } from '../store/slices/listingsSlice';
 
 interface CreateListingForm {
@@ -40,7 +40,7 @@ interface CreateListingForm {
 const CreateListingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<File[]>([]);
   const [amenities, setAmenities] = useState<string[]>([]);
